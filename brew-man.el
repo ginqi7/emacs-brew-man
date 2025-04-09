@@ -35,78 +35,67 @@
                     "brew_man.rb"))
 
 (defun brew-man-start ()
-  "Start websocket bridge real-time-translation."
+  "Start Brew manager."
   (interactive)
-  (websocket-bridge-app-start "brew-man"
-                              "ruby"
-                              brew-man--ruby-file))
+  (websocket-bridge-app-start "brew-man" "ruby" brew-man--ruby-file)
+  (sit-for 0.2)
+  (brew-man-refresh))
+
 
 
 (defun brew-man-restart ()
-  "Restart websocket bridge real-time-translation and show process."
+  "Restart Brew manager."
   (interactive)
   (websocket-bridge-app-exit "brew-man")
   (brew-man-start)
   (websocket-bridge-app-open-buffer "brew-man"))
 
-(defun brew-man-tap-list ()
-  (interactive)
-  (websocket-bridge-call "brew-man" "tap-list" #'brew-man-show-tap-list))
-
-(defun brew-man-formula-list ()
-  (interactive)
-  (websocket-bridge-call "brew-man" "formula-list" #'brew-man-show-formula-list))
-
 (defun brew-man-cask-list ()
+  "List casks."
   (interactive)
   (websocket-bridge-call "brew-man" "cask-list" #'brew-man-show-cask-list))
 
 (defun brew-man-refresh ()
+  "Refresh data."
   (interactive)
   (websocket-bridge-call "brew-man" "refresh"))
 
-(defun brew-man-show-formula-list (&rest formula-list)
-  (let ((data (mapcar #'list formula-list)))
-    (brew-man--tabulated-list-mode
-     "*brew-man-formula-list*"
-     [("Name" 20 t)
-      ("Tap" 20 t)
-      ("Homepage" 30 t)
-      ("Version" 10 t)
-      ("InstalledTime" 20 t)
-      ("Desc" 30 t)
-      ("" 8 t)]
-     0
-     data)
-    (mapc #'brew-man-formula-info formula-list)))
 
-(defun brew-man-show-cask-list (&rest cask-list)
-  (let ((data (mapcar #'list cask-list)))
-    (brew-man--tabulated-list-mode
-     "*brew-man-cask-list*"
-     [("Name" 20 t)
-      ("Tap" 20 t)
-      ("Homepage" 30 t)
-      ("Version" 10 t)
-      ("InstalledTime" 20 t)
-      ("Desc" 30 t)
-      ("" 8 t)]
-     0
-     data)
-    (mapc #'brew-man-cask-info cask-list)))
+(defun brew-man-tap-list ()
+  "List taps."
+  (interactive)
+  (websocket-bridge-call "brew-man" "tap-list" #'brew-man-show-tap-list))
 
-(defun brew-man-show-tap-list (&rest tap-list)
-  (let ((data (mapcar #'list tap-list)))
-    (brew-man--tabulated-list-mode
-     "*brew-man-tap-list*"
-     [("Name" 30 t)
-      ("Formula" 8 t)
-      ("Casks" 8 t)
-      ("Update" 20 t)
-      ("" 8 t)]
-     0
-     data)
-    (mapc #'brew-man-tap-info tap-list)))
+(defun brew-man-list ()
+  "List taps."
+  (interactive)
+  (websocket-bridge-call "brew-man" "list" #'brew-man-show-list))
+
+(defun brew-man-show-list (data)
+  (brew-man--tabulated-list-mode
+   "*brew-man-formula-list*"
+   [("Name" 20 t)
+    ("Type" 10 t)
+    ("Tap" 20 t)
+    ("Homepage" 30 t)
+    ("Version" 10 t)
+    ("InstalledTime" 20 t)
+    ("Desc" 30 t)
+    ("" 8 t)]
+   :name
+   data))
+
+(defun brew-man-show-tap-list (data)
+  (brew-man--tabulated-list-mode
+   "*brew-man-tap-list*"
+   [("Name" 30 t)
+    ("Formulae" 15 t)
+    ("Casks" 15 t)
+    ("Update" 20 t)
+    ("" 8 t)]
+   :name
+   data))
+
 
 (defun brew-man-tap-info (tap-name)
   (websocket-bridge-call "brew-man" "tap-info" tap-name #'brew-man-update-tap-entry))
@@ -185,7 +174,7 @@
       (setq tabulated-list-entries
             (mapcar
              (lambda (row)
-               (brew-man--normal-list-to-entry header key row))
+               (brew-man--list-to-entry header key row))
              data))
       (tabulated-list-mode)
       (tabulated-list-init-header)
