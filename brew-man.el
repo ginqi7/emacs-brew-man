@@ -26,6 +26,7 @@
 
 (require 'websocket-bridge)
 (require 'tabulated-list)
+(require 'transient)
 
 (defcustom brew-man-ruby-command (executable-find "ruby")
   "The ruby command path.")
