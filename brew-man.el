@@ -24,6 +24,9 @@
 
 ;;; Code:
 
+(require 'websocket-bridge)
+(require 'tabulated-list)
+
 (defcustom brew-man-ruby-command (executable-find "ruby")
   "The ruby command path.")
 
