@@ -53,16 +53,50 @@
   (interactive)
   (websocket-bridge-call "brew-man" "tap-list" #'brew-man-show-tap-list))
 
-(defun brew-man-formula-list ())
+(defun brew-man-formula-list ()
+  (interactive)
+  (websocket-bridge-call "brew-man" "formula-list" #'brew-man-show-formula-list))
 
-(defun brew-man-casks-list ())
+(defun brew-man-cask-list ()
+  (interactive)
+  (websocket-bridge-call "brew-man" "cask-list" #'brew-man-show-cask-list))
 
+(defun brew-man-refresh ()
+  (interactive)
+  (websocket-bridge-call "brew-man" "refresh"))
 
-(defun brew-man-show-test (&rest args)
-  (print args))
+(defun brew-man-show-formula-list (&rest formula-list)
+  (let ((data (mapcar #'list formula-list)))
+    (brew-man--tabulated-list-mode
+     "*brew-man-formula-list*"
+     [("Name" 20 t)
+      ("Tap" 20 t)
+      ("Homepage" 30 t)
+      ("Version" 10 t)
+      ("InstalledTime" 20 t)
+      ("Desc" 30 t)
+      ("" 8 t)]
+     0
+     data)
+    (mapc #'brew-man-formula-info formula-list)))
+
+(defun brew-man-show-cask-list (&rest cask-list)
+  (let ((data (mapcar #'list cask-list)))
+    (brew-man--tabulated-list-mode
+     "*brew-man-cask-list*"
+     [("Name" 20 t)
+      ("Tap" 20 t)
+      ("Homepage" 30 t)
+      ("Version" 10 t)
+      ("InstalledTime" 20 t)
+      ("Desc" 30 t)
+      ("" 8 t)]
+     0
+     data)
+    (mapc #'brew-man-cask-info cask-list)))
 
 (defun brew-man-show-tap-list (&rest tap-list)
-  (let ((data (mapcar (lambda (tap) (list tap)) tap-list)))
+  (let ((data (mapcar #'list tap-list)))
     (brew-man--tabulated-list-mode
      "*brew-man-tap-list*"
      [("Name" 30 t)
@@ -77,12 +111,20 @@
 (defun brew-man-tap-info (tap-name)
   (websocket-bridge-call "brew-man" "tap-info" tap-name #'brew-man-update-tap-entry))
 
+(defun brew-man-cask-info (tap-name)
+  (websocket-bridge-call "brew-man" "cask-info" tap-name #'brew-man-update-cask-entry))
+
+(defun brew-man-formula-info (formula-name)
+  (websocket-bridge-call "brew-man" "formula-info" formula-name #'brew-man-update-formula-entry))
+
+
 (defun brew-man--update-tabulated-list-entry (new-entry)
   "Update the entry with NAME to have NEW-VALUE."
   (cl-loop for item in (append (nth 1 new-entry) nil)
            for index from 0
            do
-           (tabulated-list-set-col index item t)))
+           (tabulated-list-set-col index item t)
+           (tabulated-list-revert)))
 
 (defun brew-man--locate-tabulated-list-entry (entry)
   (let* ((key (car entry))
@@ -92,13 +134,21 @@
            tabulated-list-entries)))
     (goto-line (1+ index))))
 
-
-(defun brew-man-update-tap-entry (tap-info)
-  (with-current-buffer (get-buffer-create "*brew-man-tap-list*")
-    (let ((entry (brew-man--list-to-entry tabulated-list-format :name tap-info)))
+(defun brew-man-update-entry (buffer-name info)
+  (with-current-buffer (get-buffer-create buffer-name)
+    (let ((entry (brew-man--list-to-entry tabulated-list-format :name info)))
       (save-excursion
         (brew-man--locate-tabulated-list-entry entry)
         (brew-man--update-tabulated-list-entry entry)))))
+
+(defun brew-man-update-formula-entry (info)
+  (brew-man-update-entry "*brew-man-formula-list*" info))
+
+(defun brew-man-update-cask-entry (info)
+  (brew-man-update-entry "*brew-man-cask-list*" info))
+
+(defun brew-man-update-tap-entry (info)
+  (brew-man-update-entry "*brew-man-tap-list*" info))
 
 (defun brew-man--plist-p (lst)
   "Return t if LIST is a property list, nil otherwise."
@@ -108,7 +158,6 @@
                 always (symbolp (nth (* 2 i) lst))))) ; Check keys are symbols)
 
 (defun brew-man--list-to-entry (header key lst)
-  (print (brew-man--plist-p lst))
   (if (brew-man--plist-p lst)
       (brew-man--plist-to-entry header key lst)
     (brew-man--normal-list-to-entry header key lst)))
