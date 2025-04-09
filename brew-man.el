@@ -34,13 +34,17 @@
   (file-name-concat (file-name-directory (or load-file-name (buffer-file-name)))
                     "brew_man.rb"))
 
+(defvar brew-man--list-buffer-name "*brew-man-list*")
+
+(defvar brew-man--tap-list-buffer-name "*brew-man-tap-list*")
+
+
 (defun brew-man-start ()
   "Start Brew manager."
   (interactive)
   (websocket-bridge-app-start "brew-man" "ruby" brew-man--ruby-file)
   (sit-for 0.2)
   (brew-man-refresh))
-
 
 
 (defun brew-man-restart ()
@@ -73,7 +77,7 @@
 
 (defun brew-man-show-list (data)
   (brew-man--tabulated-list-mode
-   "*brew-man-formula-list*"
+   brew-man--list-buffer-name
    [("Name" 20 t)
     ("Type" 10 t)
     ("Tap" 20 t)
@@ -87,7 +91,7 @@
 
 (defun brew-man-show-tap-list (data)
   (brew-man--tabulated-list-mode
-   "*brew-man-tap-list*"
+   brew-man--tap-list-buffer-name
    [("Name" 30 t)
     ("Formulae" 15 t)
     ("Casks" 15 t)
@@ -137,7 +141,7 @@
   (brew-man-update-entry "*brew-man-cask-list*" info))
 
 (defun brew-man-update-tap-entry (info)
-  (brew-man-update-entry "*brew-man-tap-list*" info))
+  (brew-man-update-entry brew-man--tap-list-buffer-name info))
 
 (defun brew-man--plist-p (lst)
   "Return t if LIST is a property list, nil otherwise."
@@ -176,10 +180,45 @@
              (lambda (row)
                (brew-man--list-to-entry header key row))
              data))
-      (tabulated-list-mode)
+      (brew-man-mode)
       (tabulated-list-init-header)
       (tabulated-list-print)
       (pop-to-buffer (current-buffer)))))
+
+(defun brew-man-click()
+  (interactive)
+  (when (string= (buffer-name) brew-man--list-buffer-name)
+    (brew-man-tap-list-keys))
+  (when (string= (buffer-name) brew-man--tap-list-buffer-name)
+    (brew-man-tap-list-keys)))
+
+(transient-define-prefix brew-man-tap-list-keys ()
+  ["Brew Man Tap List Keys"
+   ("a" "Add" brew-man-tap-add)
+   ("d" "Delete" brew-man-tap-delete)])
+
+(defun brew-man-tap-add ()
+  (interactive)
+  (when-let ((tap-name (read-string "Input tap Name: ")))
+    (brew-man-send-command (format "brew tap %s" tap-name) #'message)))
+
+(defun brew-man-tap-delete ()
+  (interactive)
+  (brew-man-send-command (format "brew untap %s" (tabulated-list-get-id)) #'message))
+
+(transient-define-prefix brew-man-list-keys ()
+  ["Brew Man List Keys"])
+
+(defun brew-man-send-command (cmd &optional callback)
+  (websocket-bridge-call "brew-man" "run-command" cmd callback))
+
+(define-derived-mode brew-man-mode tabulated-list-mode "brew-man"
+  "Major mode for Brew Mananger."
+  (keymap-set brew-man-mode-map "RET" 'brew-man-click)
+  (keymap-set brew-man-mode-map "j" 'next-line)
+  (keymap-set brew-man-mode-map "k" 'previous-line)
+  (keymap-set brew-man-mode-map "l" 'tabulated-list-next-column)
+  (keymap-set brew-man-mode-map "h" 'tabulated-list-previous-column))
 
 (provide 'brew-man)
 ;;; brew-man.el ends here

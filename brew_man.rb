@@ -112,7 +112,12 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       tap_list = info_list
       func = data[1]
       run_in_emacs(func, tap_list)
-
+    when 'run-command'
+      cmd = data[1]
+      result = `#{cmd}`
+      func = data[2]
+      run_in_emacs(func, result)
+      run_in_emacs('message', "Command [#{cmd}] Success.")
     else
       puts "Unknown command #{data[0]}"
     end
