@@ -15,6 +15,14 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
     lst.group_by { |item| item['tap'] }.transform_values(&:count)
   end
 
+  def select_in_tap(tap_name)
+    tap_info = @installed_tap_info_list.find { |tap| tap['name'] == tap_name }
+    elements = []
+    elements += tap_info['formula_names'].map { |formula| "#{formula} formula" } if tap_info
+    elements += tap_info['cask_tokens'].map { |cask| "#{cask} cask" } if tap_info
+    elements
+  end
+
   def tap_info_list
     formula_tap_count = tap_count(@installed_formula_info_list)
     cask_tap_count = tap_count(@installed_cask_info_list)
@@ -130,6 +138,11 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       result = `#{cmd}`
       run_in_emacs(func, result)
       run_in_emacs('message', "Command [#{cmd}] Success.")
+    when 'select-in-tap'
+      tap_name = data[1]
+      func = data[2]
+      list = select_in_tap(tap_name)
+      run_in_emacs(func, list)
     else
       puts "Unknown command #{data[0]}"
     end

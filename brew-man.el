@@ -148,7 +148,23 @@
 (transient-define-prefix brew-man-tap-list-keys ()
   ["Brew Man Tap List Keys"
    ("a" "Add" brew-man-tap-add)
-   ("d" "Delete" brew-man-tap-delete)])
+   ("d" "Delete" brew-man-tap-delete)
+   ("i" "Install in tap" brew-man-install-in-tap)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-tap-list t)))])
+
+(defun brew-man-install-in-tap ()
+  (interactive)
+  (let ((tap (tabulated-list-get-id)))
+    (websocket-bridge-call "brew-man" "select-in-tap" tap #'brew-man-install)))
+
+(defun brew-man-install (elements)
+  (let* ((selected-split (split-string (completing-read "Select element: " elements) " "))
+         (name (car selected-split))
+         (type (cadr selected-split))
+         (cmd (format "brew install --%s %s" type name)))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'message)))
+
 
 (defun brew-man-tap-add ()
   (interactive)
