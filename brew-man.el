@@ -141,7 +141,7 @@
 (defun brew-man-click()
   (interactive)
   (when (string= (buffer-name) brew-man--list-buffer-name)
-    (brew-man-tap-list-keys))
+    (brew-man-list-keys))
   (when (string= (buffer-name) brew-man--tap-list-buffer-name)
     (brew-man-tap-list-keys)))
 
@@ -179,8 +179,29 @@
     (message (format "Command [%s] Running." cmd))
     (brew-man-send-command cmd #'brew-man-tap-list)))
 
+
+(defun brew-man-add ()
+  (interactive)
+  (when-let* ((type (downcase (completing-read "Select a type: " '("Cask" "Formula"))))
+              (name (read-string "Input tap Name: "))
+              (cmd (format "brew install --%s %s" type name)))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'brew-man-list)))
+
+(defun brew-man-delete ()
+  (interactive)
+  (let ((cmd (format "brew uninstall %s" (tabulated-list-get-id))))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'brew-man-list)))
+
+
+
 (transient-define-prefix brew-man-list-keys ()
-  ["Brew Man List Keys"])
+  ["Brew Man List Keys"
+   ("a" "Add" brew-man-add)
+   ("d" "Delete" brew-man-delete)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))])
+
 
 (defun brew-man-send-command (cmd &optional callback)
   (websocket-bridge-call "brew-man" "run-command" cmd callback))
