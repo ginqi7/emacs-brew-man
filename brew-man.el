@@ -55,16 +55,10 @@
   (brew-man-start)
   (websocket-bridge-app-open-buffer "brew-man"))
 
-(defun brew-man-cask-list ()
-  "List casks."
-  (interactive)
-  (websocket-bridge-call "brew-man" "cask-list" #'brew-man-show-cask-list))
-
 (defun brew-man-refresh ()
   "Refresh data."
   (interactive)
   (websocket-bridge-call "brew-man" "refresh"))
-
 
 (defun brew-man-tap-list (&optional refresh-p)
   "List taps."
@@ -101,48 +95,6 @@
    :name
    data))
 
-
-(defun brew-man-tap-info (tap-name)
-  (websocket-bridge-call "brew-man" "tap-info" tap-name #'brew-man-update-tap-entry))
-
-(defun brew-man-cask-info (tap-name)
-  (websocket-bridge-call "brew-man" "cask-info" tap-name #'brew-man-update-cask-entry))
-
-(defun brew-man-formula-info (formula-name)
-  (websocket-bridge-call "brew-man" "formula-info" formula-name #'brew-man-update-formula-entry))
-
-
-(defun brew-man--update-tabulated-list-entry (new-entry)
-  "Update the entry with NAME to have NEW-VALUE."
-  (cl-loop for item in (append (nth 1 new-entry) nil)
-           for index from 0
-           do
-           (tabulated-list-set-col index item t)
-           (tabulated-list-revert)))
-
-(defun brew-man--locate-tabulated-list-entry (entry)
-  (let* ((key (car entry))
-         (index
-          (cl-position-if
-           (lambda (item) (equal (car item) key))
-           tabulated-list-entries)))
-    (goto-line (1+ index))))
-
-(defun brew-man-update-entry (buffer-name info)
-  (with-current-buffer (get-buffer-create buffer-name)
-    (let ((entry (brew-man--list-to-entry tabulated-list-format :name info)))
-      (save-excursion
-        (brew-man--locate-tabulated-list-entry entry)
-        (brew-man--update-tabulated-list-entry entry)))))
-
-(defun brew-man-update-formula-entry (info)
-  (brew-man-update-entry "*brew-man-formula-list*" info))
-
-(defun brew-man-update-cask-entry (info)
-  (brew-man-update-entry "*brew-man-cask-list*" info))
-
-(defun brew-man-update-tap-entry (info)
-  (brew-man-update-entry brew-man--tap-list-buffer-name info))
 
 (defun brew-man--plist-p (lst)
   "Return t if LIST is a property list, nil otherwise."
