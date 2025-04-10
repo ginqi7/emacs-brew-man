@@ -39,6 +39,9 @@
 
 (defvar brew-man--tap-list-buffer-name "*brew-man-tap-list*")
 
+(defvar brew-man--info-buffer-name "*brew-man-info*")
+
+
 
 (defun brew-man-start ()
   "Start Brew manager."
@@ -194,13 +197,43 @@
     (message (format "Command [%s] Running." cmd))
     (brew-man-send-command cmd #'brew-man-list)))
 
-
-
 (transient-define-prefix brew-man-list-keys ()
   ["Brew Man List Keys"
    ("a" "Add" brew-man-add)
    ("d" "Delete" brew-man-delete)
    ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))])
+
+(transient-define-prefix brew-man-keys ()
+  ["Brew Man Keys"
+   ("t" "Tap" brew-man-tap-list)
+   ("l" "List" brew-man-list)
+   ("s" "Select" brew-man-select)
+   ("q" "Query" brew-man-query)])
+
+(defun brew-man-select ()
+  (interactive)
+  (websocket-bridge-call "brew-man" "select-in-tap" nil #'brew-man-select-info))
+
+(defun brew-man-show-info (info)
+  (with-current-buffer (get-buffer-create brew-man--info-buffer-name)
+    (erase-buffer)
+    (insert info)
+    (pop-to-buffer (current-buffer))))
+
+(defun brew-man-select-info (elements)
+  (let* ((selected-split (split-string (completing-read "Select element: " elements) " "))
+         (name (car selected-split))
+         (type (cadr selected-split))
+         (cmd (format "brew info --%s %s" type name)))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'brew-man-show-info)))
+
+(defun brew-man-query (&optional keyword)
+  (interactive)
+  (unless keyword
+    (setq keyword (read-string "Input a search keyword: ")))
+  (let ((cmd (format "brew search %s --desc --eval-all" keyword)))
+    (brew-man-send-command cmd #'brew-man-show-info)))
 
 
 (defun brew-man-send-command (cmd &optional callback)

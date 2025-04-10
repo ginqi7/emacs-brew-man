@@ -15,12 +15,17 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
     lst.group_by { |item| item['tap'] }.transform_values(&:count)
   end
 
-  def select_in_tap(tap_name)
-    tap_info = @installed_tap_info_list.find { |tap| tap['name'] == tap_name }
+  def elements_in_tap(tap_info)
     elements = []
     elements += tap_info['formula_names'].map { |formula| "#{formula} formula" } if tap_info
     elements += tap_info['cask_tokens'].map { |cask| "#{cask} cask" } if tap_info
     elements
+  end
+
+  def select_in_tap(tap_name)
+    return elements_in_tap(@installed_tap_info_list.find { |tap| tap['name'] == tap_name }) if tap_name
+
+    @installed_tap_info_list.map { |tap_info| elements_in_tap(tap_info) }.flatten
   end
 
   def tap_info_list
