@@ -77,11 +77,19 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
     JSON.parse(`#{cmd}`)
   end
 
-  def refresh_data
+  def refresh_tap_data
     @installed_tap_info_list = run_to_json('brew tap-info --json --installed')
+  end
+
+  def refresh_formula_cask_data
     @installed_info_list = run_to_json('brew info --installed --json=v2')
     @installed_formula_info_list = @installed_info_list['formulae']
     @installed_cask_info_list = @installed_info_list['casks']
+  end
+
+  def refresh_data
+    refresh_tap_data
+    refresh_formula_cask_data
     run_in_emacs('message', 'brew-man data refreshed.')
   end
 
@@ -105,17 +113,21 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       info = query_formula_info(formula_name)
       run_in_emacs(func, info)
     when 'tap-list'
-      tap_list = tap_info_list
       func = data[1]
+      refresh = data[2]
+      refresh_tap_data if refresh
+      tap_list = tap_info_list
       run_in_emacs(func, tap_list)
     when 'list'
-      tap_list = info_list
       func = data[1]
+      refresh = data[2]
+      refresh_formula_cask_data if refresh
+      tap_list = info_list
       run_in_emacs(func, tap_list)
     when 'run-command'
       cmd = data[1]
-      result = `#{cmd}`
       func = data[2]
+      result = `#{cmd}`
       run_in_emacs(func, result)
       run_in_emacs('message', "Command [#{cmd}] Success.")
     else

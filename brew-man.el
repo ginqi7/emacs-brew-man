@@ -66,15 +66,15 @@
   (websocket-bridge-call "brew-man" "refresh"))
 
 
-(defun brew-man-tap-list ()
+(defun brew-man-tap-list (&optional refresh-p)
   "List taps."
   (interactive)
-  (websocket-bridge-call "brew-man" "tap-list" #'brew-man-show-tap-list))
+  (websocket-bridge-call "brew-man" "tap-list" #'brew-man-show-tap-list refresh-p))
 
-(defun brew-man-list ()
+(defun brew-man-list (&optional refresh-p)
   "List taps."
   (interactive)
-  (websocket-bridge-call "brew-man" "list" #'brew-man-show-list))
+  (websocket-bridge-call "brew-man" "list" #'brew-man-show-list refresh-p))
 
 (defun brew-man-show-list (data)
   (brew-man--tabulated-list-mode
@@ -200,12 +200,16 @@
 
 (defun brew-man-tap-add ()
   (interactive)
-  (when-let ((tap-name (read-string "Input tap Name: ")))
-    (brew-man-send-command (format "brew tap %s" tap-name) #'message)))
+  (when-let* ((tap-name (read-string "Input tap Name: "))
+              (cmd (format "brew tap %s" tap-name)))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'brew-man-tap-list)))
 
 (defun brew-man-tap-delete ()
   (interactive)
-  (brew-man-send-command (format "brew untap %s" (tabulated-list-get-id)) #'message))
+  (let ((cmd (format "brew untap %s" (tabulated-list-get-id))))
+    (message (format "Command [%s] Running." cmd))
+    (brew-man-send-command cmd #'brew-man-tap-list)))
 
 (transient-define-prefix brew-man-list-keys ()
   ["Brew Man List Keys"])
