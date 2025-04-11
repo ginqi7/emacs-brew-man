@@ -50,6 +50,7 @@
 (defun brew-man-start ()
   "Start Brew manager."
   (interactive)
+  (websocket-bridge-server-start)
   (websocket-bridge-app-start "brew-man" "ruby" brew-man--ruby-file)
   (sit-for 0.2)
   (brew-man-refresh))

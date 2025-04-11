@@ -1,6 +1,79 @@
 #+title: Emacs brew Manager
 
-A simple brew manager by Emacs.
+#+HTML: <a href ="https://github.com/ginqi7/emacs-brew-man/blob/master/README.zh-CN.org"><img src="https://img.shields.io/badge/README-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-555555.svg"/></a>
 
-* Features
-** List
+A simple Homebrew manager by Emacs.
+
+* Prerequisites
+- *[[https://github.com/ginqi7/websocket-bridge-ruby][websocket-bridge-ruby]]* : A websocket-bridge client for ruby.
+** Emacs dependencies
+- [[https://github.com/ginqi7/websocket-bridge][websocket-bridge]] : A bridge that connects Emacs and Ruby programs via WebSocket.
+- [[https://github.com/ahyatt/emacs-websocket][emacs-websocket]] : A websocket implementation in elisp, for emacs.
+
+* Installation
+
+** websocket-bridge-ruby
+#+begin_src shell
+gem install websocket_bridge
+#+end_src
+
+** package
+
+- clone the project in your own emacs configuration files directory, like:
+#+begin_src shell
+  git clone git@github.com:ginqi7/emacs-brew-man.git ~/.emacs.d/lisp/emacs-brew-man
+  git clone git@github.com:ginqi7/websocket-bridge.git ~/.emacs.d/lisp/websocket-bridge
+  git clone git@github.com:ahyatt/emacs-websocket.git ~/.emacs.d/lisp/emacs-websocket
+#+end_src
+
+The [[https://elpa.gnu.org/packages/websocket.html][emacs-websocket]] can be downloaded from ELPA.
+
+- add the path to ‘load-path’
+#+begin_src emacs-lisp
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/websocket-bridge"))
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/emacs-websocket"))
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/lisp/emacs-brew-man"))
+#+end_src
+
+* Configuration
+Add the following line to your Emacs configuration file (e.g., `.emacs` or `init.el`):
+
+#+begin_src emacs-lisp
+  (require 'brew-man)
+  (brew-man-start)
+#+end_src
+
+* Usage
+** A Transient Prefix
+*brew-man-keys* : Some global functions
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-keys ()
+    ["Brew Man Keys"
+     ("t" "Tap" brew-man-tap-list)
+     ("l" "List" brew-man-list)
+     ("s" "Select" brew-man-select)
+     ("q" "Query" brew-man-query)])
+#+end_src
+
+*brew-man-list-keys* : Some functions in *Brew List* buffer.
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-list-keys ()
+  ["Brew Man List Keys"
+   ("a" "Add" brew-man-add)
+   ("d" "Delete" brew-man-delete)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))])
+#+end_src
+
+*brew-man-tap-list-keys* : Some functions in *Brew Tap List* buffer.
+
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-tap-list-keys ()
+  ["Brew Man Tap List Keys"
+   ("a" "Add" brew-man-tap-add)
+   ("d" "Delete" brew-man-tap-delete)
+   ("i" "Install in tap" brew-man-install-in-tap)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-tap-list t)))])
+#+end_src
+
+* Contributions
+Contributions are welcome! Please submit issues and pull requests through the project’s repository.
