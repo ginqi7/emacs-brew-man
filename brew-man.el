@@ -37,7 +37,11 @@
 
 (defvar brew-man--list-buffer-name "*brew-man-list*")
 
+(defvar brew-man--list-last-line 0)
+
 (defvar brew-man--tap-list-buffer-name "*brew-man-tap-list*")
+
+(defvar brew-man--tap-list-last-line 0)
 
 (defvar brew-man--info-buffer-name "*brew-man-info*")
 
@@ -85,7 +89,8 @@
     ("Desc" 30 t)
     ("" 8 t)]
    :name
-   data))
+   data)
+  (goto-line brew-man--list-last-line))
 
 (defun brew-man-show-tap-list (data)
   (brew-man--tabulated-list-mode
@@ -96,7 +101,9 @@
     ("Update" 20 t)
     ("" 8 t)]
    :name
-   data))
+   data)
+  (goto-line brew-man--tap-list-last-line))
+
 
 
 (defun brew-man--plist-p (lst)
@@ -174,12 +181,14 @@
   (when-let* ((tap-name (read-string "Input tap Name: "))
               (cmd (format "brew tap %s" tap-name)))
     (message (format "Command [%s] Running." cmd))
+    (setq brew-man--tap-list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-tap-list)))
 
 (defun brew-man-tap-delete ()
   (interactive)
   (let ((cmd (format "brew untap %s" (tabulated-list-get-id))))
     (message (format "Command [%s] Running." cmd))
+    (setq brew-man--tap-list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-tap-list)))
 
 
@@ -189,12 +198,14 @@
               (name (read-string "Input tap Name: "))
               (cmd (format "brew install --%s %s" type name)))
     (message (format "Command [%s] Running." cmd))
+    (setq brew-man--list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-list)))
 
 (defun brew-man-delete ()
   (interactive)
   (let ((cmd (format "brew uninstall %s" (tabulated-list-get-id))))
     (message (format "Command [%s] Running." cmd))
+    (setq brew-man--list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-list)))
 
 (transient-define-prefix brew-man-list-keys ()
