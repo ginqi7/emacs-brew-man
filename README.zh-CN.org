@@ -1,0 +1,85 @@
+#+title: Emacs Brew Man
+
+一个简单的基于 Emacs 的 Homebrew 管理器
+
+https://github.com/user-attachments/assets/41657120-850a-4139-b77b-6658c6afdb61
+
+* 前提条件
+- *[[https://github.com/ginqi7/websocket-bridge-ruby][websocket-bridge-ruby]]* ：一个用于 Ruby 的 WebSocket 桥接客户端。
+** Emacs 依赖项
+- [[https://github.com/ginqi7/websocket-bridge][websocket-bridge]] ：通过 WebSocket 连接 Emacs 和 Ruby 程序的桥接工具。
+- [[https://github.com/ahyatt/emacs-websocket][emacs-websocket]] : Elisp 实现的 WebSocket 库，用于 Emacs。
+
+
+* 安装
+** 安装 websocket-bridge-ruby
+
+#+begin_src shell
+gem install websocket_bridge
+#+end_src
+
+** 安装 Emacs 包
+- 克隆项目到你的 Emacs 配置目录（如 ~/.emacs.d/lisp/）：
+
+#+begin_src shell
+  git clone git@github.com:ginqi7/emacs-brew-man.git ~/.emacs.d/lisp/emacs-brew-man
+  git clone git@github.com:ginqi7/websocket-bridge.git ~/.emacs.d/lisp/websocket-bridge
+  git clone git@github.com:ahyatt/emacs-websocket.git ~/.emacs.d/lisp/emacs-websocket
+#+end_src
+
+[[https://elpa.gnu.org/packages/websocket.html][emacs-websocket]] 也可以直接从 ELPA 安装。
+
+- 添加路径到 load-path
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/websocket-bridge"))
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/emacs-websocket"))
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/lisp/emacs-brew-man"))
+#+end_src
+
+* 配置
+在 Emacs 配置文件（如 .emacs 或 init.el）中添加：
+
+#+begin_src emacs-lisp
+  (require 'brew-man)
+  (brew-man-start)
+#+end_src
+
+* 使用方法
+** 全局快捷键（Transient Prefix）
+*brew-man-keys* ：提供全局功能
+
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-keys ()
+    ["Brew Man Keys"
+     ("t" "Tap" brew-man-tap-list)
+     ("l" "List" brew-man-list)
+     ("s" "Select" brew-man-select)
+     ("q" "Query" brew-man-query)])
+#+end_src
+
+** Brew 列表快捷键
+*brew-man-list-keys* ：在 *Brew 列表* 缓冲区中可用的功能
+
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-list-keys ()
+  ["Brew Man List Keys"
+   ("a" "Add" brew-man-add)
+   ("d" "Delete" brew-man-delete)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))])
+#+end_src
+
+** Brew Tap 列表快捷键
+*brew-man-tap-list-keys* ：在 *Brew Tap 列表* 缓冲区中可用的功能
+
+#+begin_src emacs-lisp
+  (transient-define-prefix brew-man-tap-list-keys ()
+  ["Brew Man Tap List Keys"
+   ("a" "Add" brew-man-tap-add)
+   ("d" "Delete" brew-man-tap-delete)
+   ("i" "Install in tap" brew-man-install-in-tap)
+   ("r" "Refresh" (lambda () (interactive) (brew-man-tap-list t)))])
+#+end_src
+
+* 贡献
+欢迎贡献！请通过项目仓库提交 Issues 和 Pull Requests。
