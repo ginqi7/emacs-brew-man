@@ -4,6 +4,8 @@
 
 A simple Homebrew manager by Emacs.
 
+https://github.com/user-attachments/assets/41657120-850a-4139-b77b-6658c6afdb61
+
 * Prerequisites
 - *[[https://github.com/ginqi7/websocket-bridge-ruby][websocket-bridge-ruby]]* : A websocket-bridge client for ruby.
 ** Emacs dependencies
