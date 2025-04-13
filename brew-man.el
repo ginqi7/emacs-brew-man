@@ -84,9 +84,9 @@
     ("Tap" 20 t)
     ("Homepage" 30 t)
     ("Version" 10 t)
+    ("NewVersion" 10 t)
     ("InstalledTime" 20 t)
-    ("NewVersion" 20 t)
-    ("Desc" 30 t)
+    ("Desc" 45 t)
     ("" 8 t)]
    :name
    data)
