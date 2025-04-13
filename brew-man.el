@@ -45,8 +45,6 @@
 
 (defvar brew-man--info-buffer-name "*brew-man-info*")
 
-
-
 (defun brew-man-start ()
   "Start Brew manager."
   (interactive)
@@ -87,6 +85,7 @@
     ("Homepage" 30 t)
     ("Version" 10 t)
     ("InstalledTime" 20 t)
+    ("NewVersion" 20 t)
     ("Desc" 30 t)
     ("" 8 t)]
    :name

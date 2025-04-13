@@ -68,6 +68,7 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       dictionary[:type] = 'formula'
       dictionary[:name] = info['name']
       dictionary[:version] = info['installed'][0]['version']
+      dictionary[:newversion] = info['versions']['stable'] if info['versions']['stable'] != dictionary[:version]
       dictionary[:installedtime] =
         DateTime.strptime(info['installed'][0]['time'].to_s, '%s').strftime('%Y-%m-%d %H:%M:%S')
       dictionary
@@ -77,7 +78,10 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       dictionary = base_convert(info)
       dictionary[:type] = 'cask'
       dictionary[:name] = info['name'][0]
-      dictionary[:version] = info['version'] if info.key?('version') && info['version']
+      version = info['installed'] if info.key?('installed') && info['installed']
+      newversion = info['version'] if info.key?('version') && info['version']
+      dictionary[:version] = version if version
+      dictionary[:newversion] = newversion if newversion != version
       dictionary[:installedtime] =
         DateTime.strptime(info['installed_time'].to_s,
                           '%s').strftime('%Y-%m-%d %H:%M:%S')
