@@ -15,6 +15,13 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
     lst.group_by { |item| item['tap'] }.transform_values(&:count)
   end
 
+  def used?(name)
+    for formula in @installed_formula_info_list
+      return 'true' if formula['dependencies'].include?(name)
+    end
+    'false'
+  end
+
   def elements_in_tap(tap_info)
     elements = []
     elements += tap_info['formula_names'].map { |formula| "#{formula} formula" } if tap_info
@@ -71,6 +78,7 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
       dictionary[:newversion] = info['versions']['stable'] if info['versions']['stable'] != dictionary[:version]
       dictionary[:installedtime] =
         DateTime.strptime(info['installed'][0]['time'].to_s, '%s').strftime('%Y-%m-%d %H:%M:%S')
+      dictionary[:used] = used?(info['name'])
       dictionary
     end
 

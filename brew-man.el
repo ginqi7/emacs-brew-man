@@ -81,11 +81,12 @@
    brew-man--list-buffer-name
    [("Name" 20 t)
     ("Type" 10 t)
-    ("Tap" 20 t)
-    ("Homepage" 30 t)
+    ("Tap" 15 t)
+    ("Homepage" 20 t)
     ("Version" 10 t)
     ("NewVersion" 10 t)
-    ("InstalledTime" 20 t)
+    ("Used" 6 t)
+    ("InstalledTime" 10 t)
     ("Desc" 45 t)
     ("" 8 t)]
    :name
