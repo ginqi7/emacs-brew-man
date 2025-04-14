@@ -208,11 +208,20 @@
     (setq brew-man--list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-list)))
 
+(defun brew-man-browse-homepage ()
+  "Open homepage by browser."
+  (interactive)
+  (when-let ((entry (tabulated-list-get-entry))
+             (homepage-index (tabulated-list--column-number "Homepage"))
+             (homepage (nth homepage-index (append entry nil))))
+    (browse-url homepage)))
+
 (transient-define-prefix brew-man-list-keys ()
   ["Brew Man List Keys"
    ("a" "Add" brew-man-add)
    ("d" "Delete" brew-man-delete)
-   ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))])
+   ("r" "Refresh" (lambda () (interactive) (brew-man-list t)))
+   ("b" "Open Homepage" brew-man-browse-homepage)])
 
 (transient-define-prefix brew-man-keys ()
   ["Brew Man Keys"
