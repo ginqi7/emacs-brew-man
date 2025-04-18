@@ -85,7 +85,7 @@ class WebsocketBridgeDemo < WebsocketBridge::Base
     casks = @installed_cask_info_list.map do |info|
       dictionary = base_convert(info)
       dictionary[:type] = 'cask'
-      dictionary[:name] = info['name'][0]
+      dictionary[:name] = info['token']
       version = info['installed'] if info.key?('installed') && info['installed']
       newversion = info['version'] if info.key?('version') && info['version']
       dictionary[:version] = version if version

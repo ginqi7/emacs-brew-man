@@ -61,7 +61,7 @@
   (brew-man-start)
   (websocket-bridge-app-open-buffer "brew-man"))
 
-(defun brew-man-refresh ()
+(defun brew-man-refresh (&optional _)
   "Refresh data."
   (interactive)
   (websocket-bridge-call "brew-man" "refresh"))
@@ -90,8 +90,7 @@
     ("Desc" 45 t)
     ("" 8 t)]
    :name
-   data)
-  (goto-line brew-man--list-last-line))
+   data))
 
 (defun brew-man-show-tap-list (data)
   (brew-man--tabulated-list-mode
@@ -138,6 +137,7 @@
 (defun brew-man--tabulated-list-mode (buffer header key data)
   (let ((buffer (get-buffer-create buffer)))
     (with-current-buffer buffer
+      (setq brew-man--list-last-line (array-current-line))
       (setq tabulated-list-format header)
       (setq tabulated-list-entries
             (mapcar
@@ -147,6 +147,7 @@
       (brew-man-mode)
       (tabulated-list-init-header)
       (tabulated-list-print)
+      (goto-line brew-man--list-last-line)
       (pop-to-buffer (current-buffer)))))
 
 (defun brew-man-click()
@@ -199,14 +200,12 @@
               (name (read-string "Input tap Name: "))
               (cmd (format "brew install --%s %s" type name)))
     (message (format "Command [%s] Running." cmd))
-    (setq brew-man--list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-list)))
 
 (defun brew-man-delete ()
   (interactive)
   (let ((cmd (format "brew uninstall %s" (tabulated-list-get-id))))
     (message (format "Command [%s] Running." cmd))
-    (setq brew-man--list-last-line (array-current-line))
     (brew-man-send-command cmd #'brew-man-list)))
 
 (defun brew-man-browse-homepage ()
@@ -267,6 +266,37 @@
   (keymap-set brew-man-mode-map "k" 'previous-line)
   (keymap-set brew-man-mode-map "l" 'tabulated-list-next-column)
   (keymap-set brew-man-mode-map "h" 'tabulated-list-previous-column))
+
+(defun brew-man-info-buffer-parse ()
+  (with-current-buffer (get-buffer-create brew-man--info-buffer-name)
+    (goto-char (point-min))
+    (let ((key)
+          (begin)
+          (end)
+          (alist))
+      (while (search-forward-regexp "^==> +\\(.*\\)$" nil t)
+        (when begin
+          (setq end (match-beginning 0))
+          (setq alist (append alist (list (cons key (buffer-substring-no-properties begin end))))))
+        (setq key (match-string 1))
+        (setq begin (match-end 0)))
+      (setq alist (append alist (list (cons key (buffer-substring-no-properties begin (point-max))))))
+      alist)))
+
+
+(defun brew-man-info-buffer-select ()
+  (let* ((info (brew-man-info-buffer-parse))
+         (type (completing-read "Select an type: " info))
+         (value (completing-read "Select an item: " (split-string (alist-get type info nil nil #'equal) "\n" t))))
+    (cons type value)))
+
+(defun brew-man-info-install-select ()
+  (interactive)
+  (let* ((key-value (brew-man-info-buffer-select))
+         (type (car key-value))
+         (formula (car (split-string (cdr key-value) ":")))
+         (cmd (format "brew install --%s %s" type formula)))
+    (brew-man-send-command cmd #'brew-man-refresh)))
 
 (provide 'brew-man)
 ;;; brew-man.el ends here
